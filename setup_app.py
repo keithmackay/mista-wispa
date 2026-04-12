@@ -6,9 +6,10 @@ Usage: python setup_app.py py2app
 from setuptools import setup
 
 APP = ["src/mista_wispa/app.py"]
-DATA_FILES = []
+DATA_FILES = [("resources", ["resources/menubar-icon.png", "resources/menubar-icon@2x.png"])]
 OPTIONS = {
     "argv_emulation": False,
+    "iconfile": "resources/mista-wispa.icns",
     "plist": {
         "CFBundleName": "mista-wispa",
         "CFBundleDisplayName": "mista-wispa",

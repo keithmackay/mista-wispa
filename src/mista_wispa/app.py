@@ -1,4 +1,5 @@
 # src/mista_wispa/app.py
+import os
 import threading
 
 import numpy as np
@@ -13,9 +14,8 @@ from mista_wispa.notify import notify
 from mista_wispa.pipeline import trim_silence, transcribe
 from mista_wispa.settings import Settings
 
-TITLE_IDLE = "MW"
-TITLE_RECORDING = "MW●"
-TITLE_PROCESSING = "MW…"
+_RESOURCES = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
+MENUBAR_ICON = os.path.join(_RESOURCES, "menubar-icon.png")
 
 
 def _play_sound(name: str):
@@ -26,7 +26,7 @@ def _play_sound(name: str):
 
 class MistaWispaApp(rumps.App):
     def __init__(self):
-        super().__init__(TITLE_IDLE, quit_button="Quit")
+        super().__init__("mista-wispa", icon=MENUBAR_ICON, template=True, quit_button="Quit")
         self.settings = Settings()
         self.recorder = AudioRecorder()
         self.hotkey = FnKeyMonitor(on_press=self._on_fn_press, on_release=self._on_fn_release)
@@ -45,16 +45,16 @@ class MistaWispaApp(rumps.App):
         self._update_llm_menu()
 
     def _on_fn_press(self):
-        self.title = TITLE_RECORDING
+        self.title = "●"
         _play_sound("Tink")
         self.recorder.start()
 
     def _on_fn_release(self):
-        self.title = TITLE_PROCESSING
+        self.title = "…"
         _play_sound("Pop")
         audio = self.recorder.stop()
         if audio is None:
-            self.title = TITLE_IDLE
+            self.title = None
             return
         # Process in background thread to keep UI responsive
         threading.Thread(target=self._process_audio, args=(audio,), daemon=True).start()
@@ -82,7 +82,7 @@ class MistaWispaApp(rumps.App):
         except Exception as e:
             notify("mista-wispa", f"Error: {e}")
         finally:
-            self.title = TITLE_IDLE
+            self.title = None
 
 
 def _check_accessibility():
