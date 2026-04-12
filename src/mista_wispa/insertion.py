@@ -69,12 +69,33 @@ def _simulate_paste():
     Quartz.CGEventPost(Quartz.kCGAnnotatedSessionEventTap, cmd_up)
 
 
+def _save_clipboard():
+    pb = _get_pasteboard()
+    types = pb.types()
+    if not types:
+        return None
+    saved = []
+    for t in types:
+        data = pb.dataForType_(t)
+        if data:
+            saved.append((t, data))
+    return saved
+
+
+def _restore_clipboard(saved):
+    if saved is None:
+        return
+    pb = _get_pasteboard()
+    pb.clearContents()
+    for ptype, data in saved:
+        pb.setData_forType_(data, ptype)
+
+
 def _insert_via_clipboard(text: str):
     pb = _get_pasteboard()
-    # Save old clipboard
-    old = pb.stringForType_("public.utf8-plain-text")
+    saved = _save_clipboard()
 
-    # Set new text
+    # Set our text
     pb.clearContents()
     pb.setString_forType_(text, "public.utf8-plain-text")
 
@@ -83,9 +104,7 @@ def _insert_via_clipboard(text: str):
 
     # Restore after delay
     time.sleep(0.15)
-    if old is not None:
-        pb.clearContents()
-        pb.setString_forType_(old, "public.utf8-plain-text")
+    _restore_clipboard(saved)
 
 
 def insert_text(text: str) -> bool:
