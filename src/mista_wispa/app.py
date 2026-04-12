@@ -11,7 +11,7 @@ from mista_wispa.cleanup import rule_based_cleanup, llm_cleanup
 from mista_wispa.hotkey import FnKeyMonitor
 from mista_wispa.insertion import insert_text
 from mista_wispa.notify import notify
-from mista_wispa.pipeline import trim_silence, transcribe
+from mista_wispa.pipeline import trim_silence, transcribe, warmup
 from mista_wispa.settings import Settings
 
 _RESOURCES = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
@@ -115,6 +115,10 @@ def main():
     app = MistaWispaApp()
     _check_accessibility()
     app.hotkey.start()
+
+    # Pre-load models in background so first dictation is fast
+    threading.Thread(target=warmup, daemon=True).start()
+
     app.run()
 
 

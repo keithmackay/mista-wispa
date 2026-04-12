@@ -29,3 +29,11 @@ def trim_silence(audio: np.ndarray, sample_rate: int = 16000) -> np.ndarray | No
 def transcribe(audio: np.ndarray) -> str:
     result = mlx_whisper.transcribe(audio, path_or_hf_repo=WHISPER_MODEL)
     return result["text"].strip()
+
+
+def warmup():
+    """Pre-load VAD and Whisper models so first dictation is fast."""
+    _get_vad_model()
+    # Transcribe a tiny silent clip to force Whisper model loading
+    silent = np.zeros(1600, dtype=np.float32)
+    mlx_whisper.transcribe(silent, path_or_hf_repo=WHISPER_MODEL)
