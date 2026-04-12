@@ -76,7 +76,7 @@ If something goes wrong (no speech detected, transcription fails), a macOS notif
 For higher-quality text formatting, enable LLM cleanup in the menu bar and run a local model in LM Studio:
 
 1. Install [LM Studio](https://lmstudio.ai)
-2. Download a small, fast model (recommended: **Gemma 3N E4B**, **Phi-4 Mini**, or **Qwen 3 4B**)
+2. Download a model (recommended: **[Liquid LFM2 24B A2B](https://huggingface.co/liquid/lfm2-24b-a2b)** — a mixture-of-experts model with only 2B active parameters, giving strong quality with fast inference)
 3. Start the local server (default: `http://127.0.0.1:1234/v1`)
 4. Toggle **LLM Cleanup** on in the mista-wispa menu bar
 
