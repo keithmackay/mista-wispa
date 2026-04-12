@@ -71,9 +71,31 @@ class MistaWispaApp(rumps.App):
             self.title = ICON_IDLE
 
 
+def _check_accessibility():
+    from ApplicationServices import AXIsProcessTrustedWithOptions
+    from CoreFoundation import kCFBooleanTrue
+
+    options = {
+        "AXTrustedCheckOptionPrompt": kCFBooleanTrue,
+    }
+    trusted = AXIsProcessTrustedWithOptions(options)
+    if not trusted:
+        rumps.alert(
+            title="Accessibility Permission Required",
+            message=(
+                "mista-wispa needs Accessibility access to capture the Fn key "
+                "and insert text.\n\n"
+                "Go to System Settings > Privacy & Security > Accessibility "
+                "and enable mista-wispa.\n\n"
+                "You may also need to disable the system dictation shortcut:\n"
+                "System Settings > Keyboard > Dictation > Shortcut > Off"
+            ),
+        )
+
+
 def main():
     app = MistaWispaApp()
-    # Start hotkey listener on main run loop (rumps runs the CFRunLoop)
+    _check_accessibility()
     app.hotkey.start()
     app.run()
 
