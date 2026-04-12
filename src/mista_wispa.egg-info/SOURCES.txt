@@ -1,8 +1,0 @@
-pyproject.toml
-src/mista_wispa/__init__.py
-src/mista_wispa.egg-info/PKG-INFO
-src/mista_wispa.egg-info/SOURCES.txt
-src/mista_wispa.egg-info/dependency_links.txt
-src/mista_wispa.egg-info/entry_points.txt
-src/mista_wispa.egg-info/requires.txt
-src/mista_wispa.egg-info/top_level.txt
