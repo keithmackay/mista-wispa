@@ -20,16 +20,16 @@ class FnKeyMonitor:
             self._on_release()
 
     def _event_callback(self, proxy, event_type, event, refcon):
-        if event_type == Quartz.NSEventTypeSystemDefined:
-            ns_event = Quartz.NSEvent.eventWithCGEvent_(event)
-            if ns_event and ns_event.subtype() == 6:  # Fn key subtype
-                # Bit 0 of data1 indicates Fn key state
-                fn_pressed = bool(ns_event.data1() & 0x01)
+        if event_type == Quartz.kCGEventFlagsChanged:
+            keycode = Quartz.CGEventGetIntegerValueField(event, Quartz.kCGKeyboardEventKeycode)
+            if keycode == 63:  # Fn/Globe key
+                flags = Quartz.CGEventGetFlags(event)
+                fn_pressed = bool(flags & Quartz.kCGEventFlagMaskSecondaryFn)
                 self._handle_fn_event(pressed=fn_pressed)
         return event
 
     def start(self):
-        mask = Quartz.NSEventMaskSystemDefined
+        mask = Quartz.CGEventMaskBit(Quartz.kCGEventFlagsChanged)
         self._tap = Quartz.CGEventTapCreate(
             Quartz.kCGSessionEventTap,
             Quartz.kCGHeadInsertEventTap,
