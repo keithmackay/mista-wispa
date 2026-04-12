@@ -1,0 +1,36 @@
+[project]
+name = "mista-wispa"
+version = "0.1.0"
+description = "Local-first voice dictation for macOS"
+requires-python = ">=3.12"
+dependencies = [
+    "rumps>=0.4.0",
+    "pyobjc-framework-Cocoa",
+    "pyobjc-framework-Quartz",
+    "pyobjc-framework-ApplicationServices",
+    "mlx-whisper",
+    "silero-vad",
+    "torch",
+    "sounddevice",
+    "numpy",
+    "openai",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock",
+]
+
+[project.scripts]
+mista-wispa = "mista_wispa.app:main"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

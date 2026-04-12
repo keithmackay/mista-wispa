@@ -1,0 +1,14 @@
+rumps>=0.4.0
+pyobjc-framework-Cocoa
+pyobjc-framework-Quartz
+pyobjc-framework-ApplicationServices
+mlx-whisper
+silero-vad
+torch
+sounddevice
+numpy
+openai
+
+[dev]
+pytest>=8.0
+pytest-mock
