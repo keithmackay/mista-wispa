@@ -193,6 +193,10 @@ This generates menu bar PNGs (1x and 2x), app icon PNGs at all sizes, and the `.
 - **Configurable sounds** — let users choose or disable the audio feedback sounds
 - **Auto-update** — check for new versions and prompt the user to update
 
+## References
+
+- [kwindla/macos-local-voice-agents](https://github.com/kwindla/macos-local-voice-agents) — the project that inspired mista-wispa's local voice pipeline architecture. Demonstrates fully local voice-to-voice AI on Apple Silicon using [Pipecat](https://github.com/pipecat-ai/pipecat), MLX Whisper, Silero VAD, and Kokoro TTS. mista-wispa adapts the STT and VAD patterns from this project into a push-to-talk dictation tool, replacing the conversational agent loop with text insertion.
+
 ## License
 
 MIT
