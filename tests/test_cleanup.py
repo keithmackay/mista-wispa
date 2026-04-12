@@ -47,3 +47,35 @@ def test_question_mark_capitalization():
 
 def test_exclamation_capitalization():
     assert rule_based_cleanup("wow! that is great") == "Wow! That is great"
+
+
+def test_preserves_like_in_sentence():
+    assert rule_based_cleanup("I like pizza") == "I like pizza"
+
+
+def test_preserves_well_in_sentence():
+    assert rule_based_cleanup("the well was deep") == "The well was deep"
+
+
+def test_preserves_right_in_sentence():
+    assert rule_based_cleanup("he is right") == "He is right"
+
+
+def test_preserves_so_in_sentence():
+    assert rule_based_cleanup("I think so") == "I think so"
+
+
+def test_removes_like_at_start():
+    assert rule_based_cleanup("Like I was saying it works") == "I was saying it works"
+
+
+def test_removes_so_at_start():
+    assert rule_based_cleanup("So the plan is good") == "The plan is good"
+
+
+def test_preserves_ellipsis():
+    assert rule_based_cleanup("I think... maybe not") == "I think... Maybe not"
+
+
+def test_filler_with_trailing_punctuation():
+    assert rule_based_cleanup("I went um. To the store") == "I went. To the store"
