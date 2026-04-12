@@ -3,6 +3,7 @@ import threading
 
 import numpy as np
 import rumps
+from AppKit import NSSound
 
 from mista_wispa.audio import AudioRecorder
 from mista_wispa.cleanup import rule_based_cleanup, llm_cleanup
@@ -14,6 +15,12 @@ from mista_wispa.settings import Settings
 TITLE_IDLE = "MW"
 TITLE_RECORDING = "MW●"
 TITLE_PROCESSING = "MW…"
+
+
+def _play_sound(name: str):
+    sound = NSSound.soundNamed_(name)
+    if sound:
+        sound.play()
 
 
 class MistaWispaApp(rumps.App):
@@ -38,10 +45,12 @@ class MistaWispaApp(rumps.App):
 
     def _on_fn_press(self):
         self.title = TITLE_RECORDING
+        _play_sound("Tink")
         self.recorder.start()
 
     def _on_fn_release(self):
         self.title = TITLE_PROCESSING
+        _play_sound("Pop")
         audio = self.recorder.stop()
         if audio is None:
             self.title = TITLE_IDLE
