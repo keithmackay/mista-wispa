@@ -1,5 +1,7 @@
 import re
 
+from openai import OpenAI
+
 _ALWAYS_REMOVE_FILLERS = {
     "um", "uh", "uhm", "umm", "ah", "er",
     "basically", "literally",
@@ -102,3 +104,30 @@ def rule_based_cleanup(text: str) -> str:
         return ""
 
     return t
+
+
+_LLM_SYSTEM_PROMPT = (
+    "You are a text cleanup assistant. The user will provide raw speech-to-text output. "
+    "Clean it up: fix grammar, improve punctuation, format lists if detected. "
+    "Preserve meaning exactly. Do not add or remove content. "
+    "Return only the cleaned text, nothing else."
+)
+
+
+def llm_cleanup(text: str, *, server_url: str, model: str = "local-model", timeout: float = 3.0) -> str:
+    if not text.strip():
+        return text
+    try:
+        client = OpenAI(base_url=server_url, api_key="not-needed")
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": _LLM_SYSTEM_PROMPT},
+                {"role": "user", "content": text},
+            ],
+            timeout=timeout,
+        )
+        result = response.choices[0].message.content
+        return result if result and result.strip() else text
+    except Exception:
+        return text
