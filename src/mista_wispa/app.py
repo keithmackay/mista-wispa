@@ -11,14 +11,14 @@ from mista_wispa.insertion import insert_text
 from mista_wispa.pipeline import trim_silence, transcribe
 from mista_wispa.settings import Settings
 
-ICON_IDLE = "🎙"
-ICON_RECORDING = "🔴"
-ICON_PROCESSING = "⏳"
+TITLE_IDLE = "MW"
+TITLE_RECORDING = "MW●"
+TITLE_PROCESSING = "MW…"
 
 
 class MistaWispaApp(rumps.App):
     def __init__(self):
-        super().__init__(ICON_IDLE, quit_button="Quit")
+        super().__init__(TITLE_IDLE, quit_button="Quit")
         self.settings = Settings()
         self.recorder = AudioRecorder()
         self.hotkey = FnKeyMonitor(on_press=self._on_fn_press, on_release=self._on_fn_release)
@@ -37,14 +37,14 @@ class MistaWispaApp(rumps.App):
         self._update_llm_menu()
 
     def _on_fn_press(self):
-        self.title = ICON_RECORDING
+        self.title = TITLE_RECORDING
         self.recorder.start()
 
     def _on_fn_release(self):
-        self.title = ICON_PROCESSING
+        self.title = TITLE_PROCESSING
         audio = self.recorder.stop()
         if audio is None:
-            self.title = ICON_IDLE
+            self.title = TITLE_IDLE
             return
         # Process in background thread to keep UI responsive
         threading.Thread(target=self._process_audio, args=(audio,), daemon=True).start()
@@ -68,7 +68,7 @@ class MistaWispaApp(rumps.App):
 
             insert_text(text)
         finally:
-            self.title = ICON_IDLE
+            self.title = TITLE_IDLE
 
 
 def _check_accessibility():
@@ -94,6 +94,10 @@ def _check_accessibility():
 
 
 def main():
+    # Register as a menu bar (accessory) app so macOS shows our status item
+    from AppKit import NSApplication
+    NSApplication.sharedApplication().setActivationPolicy_(1)  # NSApplicationActivationPolicyAccessory
+
     app = MistaWispaApp()
     _check_accessibility()
     app.hotkey.start()

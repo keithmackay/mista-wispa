@@ -4,8 +4,9 @@ from pathlib import Path
 from mista_wispa.settings import Settings
 
 
-def test_default_settings():
-    s = Settings()
+def test_default_settings(tmp_path):
+    config_file = tmp_path / "settings.json"
+    s = Settings(config_path=config_file)
     assert s.llm_cleanup_enabled is False
     assert s.llm_server_url == "http://127.0.0.1:1234/v1"
 
