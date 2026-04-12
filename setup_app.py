@@ -1,69 +1,83 @@
 """
-Build mista-wispa as a macOS .app bundle using PyInstaller.
+Build mista-wispa as a macOS .app bundle.
+
+Creates a lightweight .app wrapper that launches the uv-managed Python
+environment. This avoids the complexity of bundling ML libraries (MLX,
+torch) with PyInstaller/py2app.
 
 Usage: uv run python setup_app.py
 """
-import subprocess
-import sys
 import os
 import plistlib
+import shutil
+import stat
+import sys
 
 APP_NAME = "mista-wispa"
-ENTRY_POINT = "src/mista_wispa/app.py"
-ICON_FILE = "resources/mista-wispa.icns"
-RESOURCES = [
-    ("resources/menubar-icon.png", "resources"),
-    ("resources/menubar-icon@2x.png", "resources"),
-]
-
-# Additional Info.plist entries
-PLIST_EXTRAS = {
-    "LSUIElement": True,  # Menu bar app — no dock icon
-    "NSMicrophoneUsageDescription": "mista-wispa needs microphone access for voice dictation.",
-    "CFBundleIdentifier": "com.mistawispa.app",
-}
+BUNDLE_ID = "com.mistawispa.app"
+VERSION = "0.1.0"
 
 
 def build():
-    cmd = [
-        sys.executable, "-m", "PyInstaller",
-        "--name", APP_NAME,
-        "--windowed",  # .app bundle, no console window
-        "--icon", ICON_FILE,
-        "--noconfirm",  # overwrite previous build
-        "--clean",
-    ]
+    # Resolve paths
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    venv_python = os.path.join(project_dir, ".venv", "bin", "python3")
+    app_module = "mista_wispa.app"
 
-    # Add resource files
-    for src, dst in RESOURCES:
-        cmd.extend(["--add-data", f"{src}:{dst}"])
-
-    # Add hidden imports that PyInstaller might miss
-    for mod in ["rumps", "AppKit", "ApplicationServices", "CoreFoundation", "Quartz"]:
-        cmd.extend(["--hidden-import", mod])
-
-    cmd.append(ENTRY_POINT)
-
-    print(f"Building {APP_NAME}.app...")
-    result = subprocess.run(cmd)
-    if result.returncode != 0:
-        print("Build failed.")
+    if not os.path.exists(venv_python):
+        print(f"Error: {venv_python} not found. Run 'uv venv && uv pip install -e .' first.")
         sys.exit(1)
 
-    # Patch Info.plist with extra entries
-    plist_path = os.path.join("dist", f"{APP_NAME}.app", "Contents", "Info.plist")
-    if os.path.exists(plist_path):
-        with open(plist_path, "rb") as f:
-            plist = plistlib.load(f)
-        plist.update(PLIST_EXTRAS)
-        with open(plist_path, "wb") as f:
-            plistlib.dump(plist, f)
-        print("Patched Info.plist with LSUIElement and NSMicrophoneUsageDescription.")
+    # Build .app structure
+    app_dir = os.path.join(project_dir, "dist", f"{APP_NAME}.app")
+    contents = os.path.join(app_dir, "Contents")
+    macos = os.path.join(contents, "MacOS")
+    resources = os.path.join(contents, "Resources")
 
+    # Clean previous build
+    if os.path.exists(app_dir):
+        shutil.rmtree(app_dir)
+
+    os.makedirs(macos)
+    os.makedirs(resources)
+
+    # Create launcher script
+    launcher_path = os.path.join(macos, APP_NAME)
+    with open(launcher_path, "w") as f:
+        f.write(f"""#!/bin/bash
+# Launch mista-wispa from its project virtualenv
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+cd "{project_dir}"
+exec "{venv_python}" -m {app_module}
+""")
+    os.chmod(launcher_path, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+
+    # Create Info.plist
+    plist = {
+        "CFBundleName": APP_NAME,
+        "CFBundleDisplayName": APP_NAME,
+        "CFBundleIdentifier": BUNDLE_ID,
+        "CFBundleVersion": VERSION,
+        "CFBundleShortVersionString": VERSION,
+        "CFBundleExecutable": APP_NAME,
+        "CFBundleIconFile": "AppIcon",
+        "CFBundlePackageType": "APPL",
+        "LSUIElement": True,
+        "NSMicrophoneUsageDescription": "mista-wispa needs microphone access for voice dictation.",
+    }
+    plist_path = os.path.join(contents, "Info.plist")
+    with open(plist_path, "wb") as f:
+        plistlib.dump(plist, f)
+
+    # Copy icon
+    icns_src = os.path.join(project_dir, "resources", "mista-wispa.icns")
+    icns_dst = os.path.join(resources, "AppIcon.icns")
+    if os.path.exists(icns_src):
+        shutil.copy2(icns_src, icns_dst)
+
+    print(f"Built: {app_dir}")
     print()
-    print(f"Build complete: dist/{APP_NAME}.app")
-    print()
-    print("To install, copy to /Applications:")
+    print("To install:")
     print(f"  cp -r dist/{APP_NAME}.app /Applications/")
     print()
     print("To run:")
