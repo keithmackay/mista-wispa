@@ -79,3 +79,19 @@ def test_preserves_ellipsis():
 
 def test_filler_with_trailing_punctuation():
     assert rule_based_cleanup("I went um. To the store") == "I went. To the store"
+
+
+def test_preserves_you_know_in_sentence():
+    assert rule_based_cleanup("do you know the answer") == "Do you know the answer"
+
+
+def test_preserves_kind_of_in_sentence():
+    assert rule_based_cleanup("what kind of music do you like") == "What kind of music do you like"
+
+
+def test_preserves_actually_in_sentence():
+    assert rule_based_cleanup("what actually happened") == "What actually happened"
+
+
+def test_double_comma_cleanup():
+    assert rule_based_cleanup("I went, um, to the store") == "I went, to the store"

@@ -2,14 +2,14 @@ import re
 
 _ALWAYS_REMOVE_FILLERS = {
     "um", "uh", "uhm", "umm", "ah", "er",
-    "basically", "actually", "literally",
+    "basically", "literally",
 }
 
 _START_ONLY_FILLERS = {
-    "like", "so", "well", "right",
+    "like", "so", "well", "right", "actually",
 }
 
-_FILLER_PHRASES = [
+_START_ONLY_FILLER_PHRASES = [
     "you know",
     "i mean",
     "kind of",
@@ -23,10 +23,6 @@ def rule_based_cleanup(text: str) -> str:
 
     t = text
 
-    # Remove filler phrases (case-insensitive)
-    for phrase in _FILLER_PHRASES:
-        t = re.sub(rf"\b{phrase}\b", "", t, flags=re.IGNORECASE)
-
     # Normalize whitespace
     t = re.sub(r"\s+", " ", t).strip()
 
@@ -34,7 +30,7 @@ def rule_based_cleanup(text: str) -> str:
     words = t.split()
     cleaned: list[str] = []
     for w in words:
-        bare = w.strip(".,!?;:")
+        bare = w.rstrip(".,!?;:")
         trailing = w[len(bare):]  # punctuation after the word
         if bare.lower() in _ALWAYS_REMOVE_FILLERS:
             # Attach trailing punctuation to the previous word
@@ -46,21 +42,35 @@ def rule_based_cleanup(text: str) -> str:
     words = cleaned
     t = " ".join(words)
 
+    # Collapse duplicate commas (e.g. from "I went, um, to" -> "I went,, to")
+    t = re.sub(r",\s*,", ",", t)
+
     # Normalize whitespace again after filler removal
     t = re.sub(r"\s+", " ", t).strip()
 
-    # Remove start-only fillers from the beginning (repeatedly)
+    # Remove start-only fillers and filler phrases from the beginning (repeatedly)
     changed = True
     while changed:
         changed = False
         stripped = t.lstrip()
         if not stripped:
             break
+        # Check start-only filler phrases first
+        for phrase in _START_ONLY_FILLER_PHRASES:
+            pattern = re.compile(rf"^{phrase}\b\s*", re.IGNORECASE)
+            m = pattern.match(stripped)
+            if m:
+                t = stripped[m.end():]
+                changed = True
+                break
+        if changed:
+            continue
+        # Check start-only filler words
         first_word_match = re.match(r"(\S+)\s*(.*)", stripped)
         if first_word_match:
             first_word = first_word_match.group(1)
             rest = first_word_match.group(2)
-            bare_first = first_word.strip(".,!?;:")
+            bare_first = first_word.rstrip(".,!?;:")
             if bare_first.lower() in _START_ONLY_FILLERS:
                 t = rest
                 changed = True
