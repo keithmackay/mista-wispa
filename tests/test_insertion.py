@@ -21,22 +21,25 @@ def test_insert_via_clipboard_sets_and_restores():
 def test_insert_text_tries_accessibility_first():
     with patch("mista_wispa.insertion._insert_via_accessibility", return_value=True) as mock_ax:
         with patch("mista_wispa.insertion._insert_via_clipboard") as mock_clip:
-            insert_text("hello")
+            result = insert_text("hello")
     mock_ax.assert_called_once_with("hello")
     mock_clip.assert_not_called()
+    assert result is True
 
 
 def test_insert_text_falls_back_to_clipboard():
     with patch("mista_wispa.insertion._insert_via_accessibility", return_value=False) as mock_ax:
         with patch("mista_wispa.insertion._insert_via_clipboard") as mock_clip:
-            insert_text("hello")
+            result = insert_text("hello")
     mock_ax.assert_called_once_with("hello")
     mock_clip.assert_called_once_with("hello")
+    assert result is True
 
 
 def test_insert_text_empty_string_is_noop():
     with patch("mista_wispa.insertion._insert_via_accessibility") as mock_ax:
         with patch("mista_wispa.insertion._insert_via_clipboard") as mock_clip:
-            insert_text("")
+            result = insert_text("")
     mock_ax.assert_not_called()
     mock_clip.assert_not_called()
+    assert result is False

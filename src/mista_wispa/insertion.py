@@ -88,8 +88,10 @@ def _insert_via_clipboard(text: str):
         pb.setString_forType_(old, "public.utf8-plain-text")
 
 
-def insert_text(text: str):
+def insert_text(text: str) -> bool:
     if not text:
-        return
-    if not _insert_via_accessibility(text):
-        _insert_via_clipboard(text)
+        return False
+    if _insert_via_accessibility(text):
+        return True
+    _insert_via_clipboard(text)
+    return True

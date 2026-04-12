@@ -9,6 +9,7 @@ from mista_wispa.audio import AudioRecorder
 from mista_wispa.cleanup import rule_based_cleanup, llm_cleanup
 from mista_wispa.hotkey import FnKeyMonitor
 from mista_wispa.insertion import insert_text
+from mista_wispa.notify import notify
 from mista_wispa.pipeline import trim_silence, transcribe
 from mista_wispa.settings import Settings
 
@@ -62,10 +63,12 @@ class MistaWispaApp(rumps.App):
         try:
             trimmed = trim_silence(audio)
             if trimmed is None:
+                notify("mista-wispa", "No speech detected")
                 return
 
             text = transcribe(trimmed)
             if not text:
+                notify("mista-wispa", "Transcription returned empty")
                 return
 
             text = rule_based_cleanup(text)
@@ -76,6 +79,8 @@ class MistaWispaApp(rumps.App):
                 text = llm_cleanup(text, server_url=self.settings.llm_server_url)
 
             insert_text(text)
+        except Exception as e:
+            notify("mista-wispa", f"Error: {e}")
         finally:
             self.title = TITLE_IDLE
 
