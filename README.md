@@ -98,8 +98,7 @@ Stored at `~/.config/mista-wispa/settings.json`:
 To create a standalone `.app` bundle:
 
 ```bash
-uv pip install py2app
-uv run python setup_app.py py2app
+uv run python setup_app.py
 ```
 
 Then copy to Applications:
