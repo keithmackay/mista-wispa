@@ -6,6 +6,7 @@ _DEFAULT_PATH = Path.home() / ".config" / "mista-wispa" / "settings.json"
 _DEFAULTS = {
     "llm_cleanup_enabled": False,
     "llm_server_url": "http://127.0.0.1:1234/v1",
+    "input_device": None,
 }
 
 
@@ -18,6 +19,7 @@ class Settings:
                 data.update(json.load(f))
         self.llm_cleanup_enabled: bool = data["llm_cleanup_enabled"]
         self.llm_server_url: str = data["llm_server_url"]
+        self.input_device: str | None = data["input_device"]
 
     def save(self):
         self._path.parent.mkdir(parents=True, exist_ok=True)
@@ -26,6 +28,7 @@ class Settings:
                 {
                     "llm_cleanup_enabled": self.llm_cleanup_enabled,
                     "llm_server_url": self.llm_server_url,
+                    "input_device": self.input_device,
                 },
                 f,
                 indent=2,

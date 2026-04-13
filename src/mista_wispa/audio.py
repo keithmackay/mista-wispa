@@ -10,8 +10,9 @@ BLOCK_SIZE = 1024
 
 
 class AudioRecorder:
-    def __init__(self, sample_rate: int = SAMPLE_RATE):
+    def __init__(self, sample_rate: int = SAMPLE_RATE, device: str | None = None):
         self._sample_rate = sample_rate
+        self._device = device
         self._stream: sd.InputStream | None = None
         self._frames: list[np.ndarray] = []
         self._lock = threading.Lock()
@@ -31,6 +32,7 @@ class AudioRecorder:
             channels=CHANNELS,
             blocksize=BLOCK_SIZE,
             dtype=np.float32,
+            device=self._device,
             callback=self._audio_callback,
         )
         self._stream.start()

@@ -8,6 +8,7 @@ from AppKit import NSSound
 
 from mista_wispa.audio import AudioRecorder
 from mista_wispa.cleanup import rule_based_cleanup, llm_cleanup
+from mista_wispa.config_dialog import show_config_dialog
 from mista_wispa.hotkey import FnKeyMonitor
 from mista_wispa.insertion import insert_text
 from mista_wispa.notify import notify
@@ -28,21 +29,17 @@ class MistaWispaApp(rumps.App):
     def __init__(self):
         super().__init__("mista-wispa", icon=MENUBAR_ICON, template=True, quit_button="Quit")
         self.settings = Settings()
-        self.recorder = AudioRecorder()
+        self.recorder = AudioRecorder(device=self.settings.input_device)
         self.hotkey = FnKeyMonitor(on_press=self._on_fn_press, on_release=self._on_fn_release)
 
         self.menu = [
-            rumps.MenuItem("LLM Cleanup", callback=self._toggle_llm),
+            rumps.MenuItem("Settings…", callback=self._open_settings),
         ]
-        self._update_llm_menu()
 
-    def _update_llm_menu(self):
-        self.menu["LLM Cleanup"].state = self.settings.llm_cleanup_enabled
-
-    def _toggle_llm(self, sender):
-        self.settings.llm_cleanup_enabled = not self.settings.llm_cleanup_enabled
-        self.settings.save()
-        self._update_llm_menu()
+    def _open_settings(self, sender):
+        if show_config_dialog(self.settings):
+            # Apply updated device selection
+            self.recorder = AudioRecorder(device=self.settings.input_device)
 
     def _on_fn_press(self):
         self.title = "●"
