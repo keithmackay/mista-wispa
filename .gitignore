@@ -15,5 +15,8 @@ venv/
 .vscode/
 *.swp
 
+# PyInstaller
+*.spec
+
 # OS
 .DS_Store
